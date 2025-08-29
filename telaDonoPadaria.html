@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Pães - PãoKentin</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, select, button { margin: 5px 0; padding: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    </style>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+    <h1>Cadastro de Pães</h1>
+
+    <form id="formPao" class="mb-3">
+        <label>Tipo:</label><br>
+        <input type="text" id="tipo" required><br>
+
+        <label>Descrição:</label><br>
+        <input type="text" id="descricao" required><br>
+
+        <label>Tempo de Forno (minutos):</label><br>
+        <input type="number" id="tempoForno" required><br>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Cadastrar Pão</button>
+    </form>
+
+    <h2>Pães cadastrados</h2>
+    <table id="tabelaPaes" class="table">
+        <thead class="table-dark">
+            <tr>
+                <th>Tipo</th>
+                <th>Descrição</th>
+                <th>Tempo Forno</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.getElementById('formPao');
+        const tabela = document.getElementById('tabelaPaes').getElementsByTagName('tbody')[0];
+
+        async function carregarPaes() {
+            const res = await fetch('http://localhost:8080/paes');
+            const paes = await res.json();
+            tabela.innerHTML = '';
+            paes.forEach(p => {
+                const linha = tabela.insertRow();
+                linha.insertCell(0).textContent = p.tipo;
+                linha.insertCell(1).textContent = p.descricao;
+                linha.insertCell(2).textContent = p.tempoForno;
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const novoPao = {
+                tipo: document.getElementById('tipo').value,
+                descricao: document.getElementById('descricao').value,
+                tempoForno: parseInt(document.getElementById('tempoForno').value)
+            };
+
+            const res = await fetch('http://localhost:8080/paes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novoPao)
+            });
+
+            if (res.ok) {
+                alert('Pão cadastrado com sucesso!');
+                form.reset();
+                carregarPaes();
+            } else {
+                alert('Erro ao cadastrar pão');
+            }
+        });
+
+        carregarPaes();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

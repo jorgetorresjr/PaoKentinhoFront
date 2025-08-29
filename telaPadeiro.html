@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tela Padeiro</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 40px;
+      padding: 40px;
+      background: #f5f5f5;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 15px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover:enabled {
+      transform: scale(1.05);
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  const apiUrl = 'http://localhost:8080';
+
+  // Paleta fixa de cores (na ordem da matriz que você mostrou)
+  const cores = [
+    {bg:"#d4ff4d", fg:"black"},   // Amarelo-esverdeado
+    {bg:"#4d94ff", fg:"white"},   // Azul
+    {bg:"#00441e", fg:"white"},   // Verde-escuro
+    {bg:"#800020", fg:"white"},   // Vinho
+    {bg:"#4dffd2", fg:"black"},   // Verde-água
+    {bg:"#ff944d", fg:"white"},   // Laranja
+    {bg:"#4d4dff", fg:"white"},   // Azul-violeta
+    {bg:"#ff4df3", fg:"white"},   // Rosa
+    {bg:"#001f54", fg:"white"},   // Azul-escuro
+    {bg:"#ffd454", fg:"black"},   // Amarelo
+    {bg:"#000000", fg:"white"},   // Preto
+    {bg:"#4dffff", fg:"black"},   // Ciano
+    {bg:"#4dd2ff", fg:"black"},   // Azul-claro
+    {bg:"#e00000", fg:"white"},   // Vermelho
+    {bg:"#00d100", fg:"white"},   // Verde
+  ];
+
+  async function carregarPaes() {
+    const res = await fetch(`${apiUrl}/paes`);
+    const paes = await res.json();
+
+    // Preenche a matriz
+    cores.forEach((cor, i) => {
+      const btn = document.createElement('button');
+      btn.style.background = cor.bg;
+      btn.style.color = cor.fg;
+
+      if (i < paes.length) {
+        const pao = paes[i];
+        btn.textContent = pao.tipo;
+
+        btn.addEventListener('click', async () => {
+          const fornada = { idPao: pao.id, horarioEntrada: new Date().toISOString() };
+          const resp = await fetch(`${apiUrl}/fornadas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(fornada)
+          });
+          if (resp.ok) {
+            alert(`Fornada do pão "${pao.tipo}" cadastrada!`);
+          } else {
+            alert('Erro ao cadastrar fornada');
+          }
+        });
+      } else {
+        btn.textContent = "—"; // vazio
+        btn.disabled = true;
+      }
+
+      document.body.appendChild(btn);
+    });
+  }
+
+  carregarPaes();
+</script>
+
+</body>
+</html>
