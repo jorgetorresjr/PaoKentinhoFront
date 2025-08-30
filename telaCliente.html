@@ -1,11 +1,129 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaoKentinho</title>
-</head>
-<body>
-    <h1>Cliente</h1>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tela Cliente</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      /* Container para os cards em 3 colunas */
+      .cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 colunas iguais */
+        gap: 15px;
+        justify-items: center; /* centraliza os cards em cada coluna */
+      }
+
+      .card {
+        width: 120px;
+        height: 100px;
+        padding: 10px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .status {
+        margin-top: 5px;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Últimas fornadas!</h1>
+    <div class="cards-container" id="cards-container"></div>
+
+    <script>
+      const apiUrl = "http://localhost:8080";
+
+      const cores = [
+        { bg: "#d4ff4d", fg: "black" },
+        { bg: "#4d94ff", fg: "white" },
+        { bg: "#00441e", fg: "white" },
+        { bg: "#800020", fg: "white" },
+        { bg: "#4dffd2", fg: "black" },
+        { bg: "#ff944d", fg: "white" },
+        { bg: "#4d4dff", fg: "white" },
+        { bg: "#ff4df3", fg: "white" },
+        { bg: "#001f54", fg: "white" },
+        { bg: "#ffd454", fg: "black" },
+        { bg: "#000000", fg: "white" },
+        { bg: "#4dffff", fg: "black" },
+        { bg: "#4dd2ff", fg: "black" },
+        { bg: "#e00000", fg: "white" },
+        { bg: "#00d100", fg: "white" },
+      ];
+
+      async function carregarTelaCliente() {
+        try {
+          const resPaes = await fetch(`${apiUrl}/paes`);
+          const paes = await resPaes.json();
+
+          const resFornadas = await fetch(`${apiUrl}/fornadas`);
+          const fornadas = await resFornadas.json();
+
+          const container = document.getElementById("cards-container");
+
+          paes.forEach((pao) => {
+            const fornadasDoPao = fornadas.filter((f) => f.pao.id === pao.id);
+            const ultimaFornada = fornadasDoPao[fornadasDoPao.length - 1];
+
+            const card = document.createElement("div");
+            card.classList.add("card");
+
+            const cor = cores[pao.id - 1] || { bg: "#999", fg: "white" };
+            card.style.background = cor.bg;
+            card.style.color = cor.fg;
+
+            card.innerHTML = `<div>${pao.tipo}</div>`;
+
+            const statusDiv = document.createElement("div");
+            statusDiv.classList.add("status");
+
+            if (ultimaFornada) {
+              const [h, m, s] = ultimaFornada.horarioSaida
+                .split(":")
+                .map(Number);
+              const fim = new Date();
+              fim.setHours(h, m, s, 0);
+              const agora = new Date();
+              const diff = (fim - agora) / 1000 / 60;
+
+              if (diff > 0) {
+                statusDiv.textContent = `Nova fornada em: ${Math.ceil(diff)} minutos`;
+              } else {
+                statusDiv.textContent = `Saiu às ${String(h).padStart(
+                  2,
+                  "0"
+                )}:${String(m).padStart(2, "0")}`;
+              }
+            } else {
+              statusDiv.textContent = "Sem fornadas ainda";
+            }
+
+            card.appendChild(statusDiv);
+            container.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Erro ao carregar dados:", error);
+        }
+      }
+
+      carregarTelaCliente();
+    </script>
+  </body>
 </html>
